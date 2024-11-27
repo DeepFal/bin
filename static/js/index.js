@@ -4,9 +4,10 @@ const grid_form = document.querySelector('.grid_form');
 const fileUpload = document.querySelector('.fileUpload');
 const fileInput = document.querySelector('input#file-upload');
 const upload_card = document.querySelector('#upload_card');
-const textarea = document.querySelector('textarea');
-const select = document.querySelector('select');
+const textarea = document.getElementById('textarea_content');
+const select = document.getElementById('ext');
 const submitButton = document.querySelector('button[type="submit"]');
+const searchWrapper = document.querySelector('.search-wrapper');
 
 window.onload = () => {
     if (localStorage["forkText"] !== null) {
@@ -18,10 +19,13 @@ window.onload = () => {
 }
 
 const onInput = () => {
-    submitButton.classList.toggle('hidden', !textarea.value);
-    select.classList.toggle('hidden', !textarea.value);
-    fileUpload.classList.toggle('hidden', textarea.value);
+    const hasContent = !!textarea.value;
+    submitButton.classList.toggle('hidden', !hasContent);
+    select.classList.toggle('hidden', !hasContent);
+    searchWrapper.classList.toggle('hidden', !hasContent);
+    fileUpload.classList.toggle('hidden', hasContent);
 }
+
 textarea.addEventListener('input', onInput);
 onInput();
 
@@ -147,3 +151,27 @@ fileInput.onchange = function (e) {
         upload(file);
     }
 }
+
+// 添加搜索功能
+document.getElementById('languageSearch').addEventListener('input', function(e) {
+    const searchText = e.target.value.toLowerCase();
+    const options = select.options;
+
+    for (let i = 0; i < options.length; i++) {
+        const option = options[i];
+        const text = option.text.toLowerCase();
+        const value = option.value.toLowerCase();
+        
+        const match = text.includes(searchText) || value.includes(searchText);
+        option.style.display = match ? '' : 'none';
+    }
+});
+
+// 添加快捷键聚焦
+document.addEventListener('keydown', function(e) {
+    // 按下 Ctrl + / 时聚焦到搜索框
+    if (e.ctrlKey && e.key === '/') {
+        e.preventDefault();
+        document.getElementById('languageSearch').focus();
+    }
+});

@@ -15,6 +15,7 @@ clap = { version = "3.0.9", features = ["derive", "env"] }
 once_cell = "1"
 sha256 = "1"
 time = { version = "0.3", features = ["formatting"] }
+httpdate = "1.0"
 
 [dependencies.rocket_dyn_templates]
 version = "0.1.0-rc.1"

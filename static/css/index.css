@@ -84,6 +84,57 @@ select {
     font-size: inherit;
     cursor: inherit;
     line-height: inherit;
+    scrollbar-width: thin;
+    scrollbar-color: #f29718 #1a1f25;
+}
+
+/* Webkit 浏览器的滚动条样式 */
+select::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+/* 滚动条轨道 */
+select::-webkit-scrollbar-track {
+    background: #1a1f25;
+    border-radius: 4px;
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 滚动条滑块 */
+select::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #f29718, #be7611);
+    border-radius: 4px;
+    border: 2px solid #1a1f25;
+    transition: all 0.3s ease;
+}
+
+/* 滑块悬停效果 */
+select::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #be7611, #f29718);
+    box-shadow: 0 0 8px rgba(242, 151, 24, 0.5);
+}
+
+/* 滑块激活效果 */
+select::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(45deg, #8e5a0e, #be7611);
+}
+
+/* 滚动条角落 */
+select::-webkit-scrollbar-corner {
+    background: #1a1f25;
+}
+
+/* 确保选择框在滚动时有平滑效果 */
+select {
+    scroll-behavior: smooth;
+    overflow-y: overlay;
+}
+
+/* 选项悬停时的动画效果 */
+option:hover {
+    background: linear-gradient(45deg, rgba(242, 151, 24, 0.1), rgba(242, 151, 24, 0.2));
+    transition: background 0.3s ease;
 }
 
 option {
@@ -141,6 +192,40 @@ button[type="submit"]:hover {
     outline: none;
 }
 
-*.hidden {
-    display: none;
+.hidden {
+    display: none !important;
+}
+
+.search-wrapper {
+    position: sticky;
+    top: 0;
+    padding: 2px 0;
+    background: transparent;
+}
+
+#languageSearch {
+    width: 80%;
+    padding: 4px 8px;
+    border: none;
+    background: transparent;
+    color: #f29718;
+    font-family: "Iosevka Web", monospace;
+    font-size: 1em;
+    caret-color: #f29718;
+    caret-shape: block;
+}
+
+#languageSearch::placeholder {
+    color: #666;
+    opacity: 0.8;
+}
+
+#languageSearch:focus {
+    outline: none;
+    background: rgba(242, 151, 24, 0.1);
+}
+
+#languageSearch::selection {
+    background: rgba(242, 151, 24, 0.3);
+    color: #f29718;
 }

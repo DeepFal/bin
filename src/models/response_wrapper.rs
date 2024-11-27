@@ -1,10 +1,11 @@
 use rocket::{
-    http::Status,
+    http::{ContentType, Status, Header},
     request::Request,
     response::{Redirect, Responder, Response, Result},
 };
 use std::io::Cursor;
 use std::time::SystemTime;
+use httpdate;
 
 pub enum ResponseWrapper<R> {
     MetaInterfaceResponse(R),
@@ -44,7 +45,7 @@ impl<'r, 'o: 'r, R: Responder<'r, 'o>> ResponseWrapper<R> {
 impl<'r, 'o: 'r, R: Responder<'r, 'o>> Responder<'r, 'o>
     for ResponseWrapper<R>
 {
-    fn respond_to(self, request: &'r Request<'_>) -> Result<'o> {
+    fn respond_to(self, req: &'r Request<'_>) -> Result<'o> {
         use ResponseWrapper::*;
 
         // Add global headers.
@@ -54,7 +55,7 @@ impl<'r, 'o: 'r, R: Responder<'r, 'o>> Responder<'r, 'o>
         // Handle individual request types.
         match self {
             MetaInterfaceResponse(sup) => response
-                .join(sup.respond_to(request)?)
+                .join(sup.respond_to(req)?)
                 .raw_header("ETag", &*crate::BINARY_ETAG)
                 .raw_header(
                     "Cache-Control",
@@ -63,7 +64,7 @@ impl<'r, 'o: 'r, R: Responder<'r, 'o>> Responder<'r, 'o>
                 .ok(),
 
             PrettyPasteContentResponse(sup, modified) => response
-                .join(sup.respond_to(request)?)
+                .join(sup.respond_to(req)?)
                 .raw_header("Last-Modified", http_strftime(modified))
                 .raw_header(
                     "Cache-Control",
@@ -71,13 +72,24 @@ impl<'r, 'o: 'r, R: Responder<'r, 'o>> Responder<'r, 'o>
                 )
                 .ok(),
 
-            RawPasteContentResponse(sup, modified) => response
-                .join(sup.respond_to(request)?)
-                .raw_header("Last-Modified", http_strftime(modified))
-                .raw_header("Cache-Control", "max-age=604800, immutable")
-                .ok(),
+            RawPasteContentResponse(responder, modified) => {
+                let mut response = responder.respond_to(req)?;
+                
+                // 添加 UTF-8 字符编码
+                response.set_header(ContentType::new("text", "plain;charset=utf-8"));
+                
+                if let Ok(modified) = modified.duration_since(SystemTime::UNIX_EPOCH) {
+                    // 将 duration 转换为 SystemTime
+                    let system_time = SystemTime::UNIX_EPOCH + modified;
+                    response.set_header(Header::new(
+                        "Last-Modified",
+                        httpdate::fmt_http_date(system_time),
+                    ));
+                }
+                Ok(response)
+            }
 
-            Redirect(sup) => response.join(sup.respond_to(request)?).ok(),
+            Redirect(sup) => response.join(sup.respond_to(req)?).ok(),
 
             NotFound(s) => {
                 let body = format!("Unable to find entity '{}'", s);
